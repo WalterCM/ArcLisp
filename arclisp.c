@@ -8,7 +8,7 @@
 
 static chat buffer[2048];
 
-// Fale readlione function
+// Fake readlione function
 char* readline(char* prompt)
 {
 	fputs(prompt, stdout);
@@ -19,7 +19,7 @@ char* readline(char* prompt)
 	return cpy;
 }
 
-// Fale add_history function
+// Fake add_history function
 void add_history(char* unused) {}
 
 // Otherwise indlude the editline headers
