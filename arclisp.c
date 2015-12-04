@@ -67,7 +67,7 @@ void aval_print(aval v)
 		// Then break out of the switch
 		char buffer2[2048];
 		case AVAL_NUM:
-			printf("%g\n", v.num);
+			printf("%g", v.num);
 			break;
 		// In the case the type is an error
 		case AVAL_ERR:
@@ -75,12 +75,15 @@ void aval_print(aval v)
 			if (v.err == AERR_DIV_ZERO) {
 				printf("Error: Division by zero!");
 			}
+			
 			if (v.err == AERR_BAD_OP) {
 				printf("Error: Invalid operator!");
 			}
+
 			if (v.err == AERR_BAD_NUM) {
 				printf("Error: Invalid number");
 			}
+
 			break;
 	}
 }
