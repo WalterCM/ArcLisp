@@ -32,15 +32,19 @@ void add_history(char* unused) {}
 enum { AVAL_NUM, AVAL_ERR };
 
 // Create enumaration of possible error types
-enum { AERR_DIV_ZERO, AERR_BAD_OP, AERR_BAD_NUM };
+enum {
+	AERR_DIV_ZERO,
+	AERR_BAD_OP,
+	AERR_BAD_NUM,
+	AERR_NO_INT };
 
 typedef struct {
 	int type;
-	long num;
+	double num;
 	int err;
 } aval;
 
-aval aval_num(long x)
+aval aval_num(double x)
 {
 	aval v;
 	v.type = AVAL_NUM;
@@ -61,8 +65,9 @@ void aval_print(aval v)
 	switch (v.type) {
 		// In the case the type a number, print it
 		// Then break out of the switch
+		char buffer2[2048];
 		case AVAL_NUM:
-			printf("%li", v.num);
+			printf("%g\n", v.num);
 			break;
 		// In the case the type is an error
 		case AVAL_ERR:
@@ -86,13 +91,13 @@ void aval_println(aval v)
 	putchar('\n');
 }
 
-long min(long x, long y)
+double min(double x, double y)
 {
 	if (x > y) 	return y;
 	else 		return x;
 }
 
-long max(long x, long y)
+double max(double x, double y)
 {
 	if (x > y) 	return x;
 	else 		return y;
@@ -113,8 +118,15 @@ aval eval_op(aval x, char* op, aval y) {
 			: aval_num(x.num / y.num);
 	}
 	
-
-	if (strcmp(op, "%") == 0) { return aval_num(x.num % y.num); }
+	if (strcmp(op, "%") == 0) { 
+		int intx = (int)x.num;
+		int inty = (int)y.num;
+		if (x.num > intx || y.num > inty) {
+			return aval_err(AERR_NO_INT);
+		} else {
+			return aval_num(intx % inty);
+		}
+	}
 	if (strcmp(op, "^") == 0) { return aval_num(pow(x.num, y.num)); }
 	if (strcmp(op, "min") == 0) { return aval_num(min(x.num, y.num)); }
 	if (strcmp(op, "max") == 0) { return aval_num(max(x.num, y.num)); }
@@ -127,7 +139,7 @@ aval eval(mpc_ast_t* t)
 	if (strstr(t->tag, "number")) {
 		// Check is there is some error in conversion
 		errno = 0;
-		long x = strtol(t->contents, NULL, 10);
+		double x = atof(t->contents);
 		return errno != ERANGE ? aval_num(x) : aval_err(AERR_BAD_NUM);
 	}
 
@@ -161,7 +173,7 @@ int main(int argc, char** argv)
 	// Define them with the following language
 	mpca_lang(MPCA_LANG_DEFAULT,
 		"													\
-			number : /-?[0-9]+/ ;							\
+			number : /-?[0.0-9.9]+/ ;						\
 			operator : '+' | '-' | '*' | '/' |				\
 					   '%' | '^' | \"min\" | \"max\" ;		\
 			expr : <number> | '(' <operator> <expr>+ ')' ;	\
